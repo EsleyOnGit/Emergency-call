@@ -1,7 +1,7 @@
 import{ useState } from 'react';
 import { View, Text, Modal, Button, StyleSheet } from 'react-native';
 
-export default function Modal() {
+export default function Modal(props) {
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -17,7 +17,7 @@ export default function Modal() {
       >
         <View style={styles.modalBackground}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Dados alterados com sucesso!</Text>
+            <Text style={styles.modalText}>{props.message}</Text>
             <Button title="Fechar" onPress={() => setModalVisible(false)} />
           </View>
         </View>

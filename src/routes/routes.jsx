@@ -1,4 +1,4 @@
-import { NavigartionContainer } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { SafeAreaView } from 'react-native';
 
@@ -10,14 +10,14 @@ const Drawer = createDrawerNavigator();
 
 const Routes = () =>{
     return(
-        <SafeAreaView>
-            <NavigartionContainer>
+        <SafeAreaView style={{ flex: 1 }}>
+            <NavigationContainer>
                 <Drawer.Navigator>
-                    <Drawer.screen name='Home' component={Home} />
-                    <Drawer.screen name='Setting' component={Setting} />
-                    <Drawer.screen name='Profile' component={Profile} />
+                    <Drawer.Screen name='Home' component={Home} />
+                    <Drawer.Screen name='Setting' component={Setting} />
+                    <Drawer.Screen name='Profile' component={Profile} />
                 </Drawer.Navigator>
-            </NavigartionContainer>
+            </NavigationContainer>
         </SafeAreaView>
     )
 }
