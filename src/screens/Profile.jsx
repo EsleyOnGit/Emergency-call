@@ -1,22 +1,29 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import Button from "../Button/Button";
+import { useContext } from 'react';
+import { InformationsContext } from '../context/formInfo';
 
 export default function Profile() {
+  const {
+  nome, data_nasc, tipoSang, alergia,
+  medicacao, nomeCont, numContato
+} = useContext(InformationsContext);
 
   return (
     <View style={styles.container}>
-      <Button title="Nome" descricao="Fulana da Conceição" />
+      <Button title="Nome" descricao={nome} />
     
-      <Button title="idade" descricao="24" />
+      <Button title="idade" descricao={2025-data_nasc} />
 
-      <Button title="Tipo Sanguineo" descricao="A-"/>  
+      <Button title="Tipo Sanguineo" descricao={tipoSang}/>  
 
-      <Button title="Alergica a" descricao="dipirona"/>
+      <Button title="Alergica a" descricao={alergia}/>
 
-      <Button title="medicação" descricao="almendazol"/>  
+      <Button title="medicação" descricao={medicacao}/>  
 
-      <Button title="Contato cadastrado" descricao="Jozé"/>
+      <Button title="Contato cadastrado" descricao={nomeCont}/>
+      <Button title="Contato cadastrado" descricao={numContato}/>
       <TouchableOpacity title="Abrir Modal" onPress={() => EditInformation(true)} ><Text>abrir modal</Text></TouchableOpacity>
 
       

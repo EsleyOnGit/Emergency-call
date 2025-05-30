@@ -1,89 +1,102 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, Platform, ActivityIndicator, Switch } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, Platform, ActivityIndicator, Switch, Linking } from 'react-native';
 import siren from "../../assets/siren.png";
 import * as Speech from 'expo-speech';
 import * as Location from 'expo-location';
 import * as Contacts from 'expo-contacts';
-import { useState, useEffect } from 'react';
-import react from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigation } from "@react-navigation/native";
-import { State } from 'react-native-gesture-handler';
+import {InformationsContext} from '../context/formInfo';
 //import MapView from 'react-native-maps';
 
-export default function Home() {
-  const [location, setLocation] = useState(null);
+export default function Home(){
+    const { nome, data_nasc, tipoSang, alergia,
+            medicacao, nomeCont, numContato
+          } = useContext(InformationsContext);
+    const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
     const [contato, setContato] = useState('75998323259');
-    const nav = useNavigation()
+    const nav = useNavigation();
 
-  //   async function getContact(){
-  //     const { status } = await Contacts.requestPermissionsAsync();
-  //     if (status === 'granted') {
-  //       const { data } = await Contacts.getContactsAsync({
-  //         fields: [Contacts.Fields.Emails],
-  //       });
-
-  //       if (data.length > 0) {
-  //         const contact = data[0];
-  //         console.log(contact);
-  //       }
-  //     }
-  // }
-  //   console.log("contato cadastrado.")
-  //   }
+    async function getContact(){
+      
+      //Ask for permission
+      try {
+        const { status } = await Contacts.requestPermissionsAsync();
+        if ( status === 'granted' ) {
+          return setErrorMsg("Permissão negada!")
+          }
+          const contacts =  await Contacts.getContactsAsync({
+              fields: [Contacts.Fields.PhoneNumbers],
+              pageSize: 10,
+              pageOffset: 0
+            })
+          
+          if(contacts.total > 0){
+            setContato(contacts)
+            console.log(contacts)
+          }
+        
+      } catch (error) {
+        setErrorMsg(error)
+      }
+  }
 
   useEffect( () => {
-
-    (async () => {
-    // Request permission
-    const { status } = await Contacts.requestPermissionsAsync();
-    if (status === 'granted') {
-      // Fetch contacts
-      const { data } = await Contacts.getContactsAsync({
-        fields: [Contacts.Fields.PhoneNumbers],
-      });
-
-      if (data.length > 0) {
-        const contact = data[0];
-        console.log(contact);
-
-        // Optionally add a contact (example)
-        const newContact = {
-          [Contacts.Fields.FirstName]: 'John',
-          [Contacts.Fields.LastName]: 'Doe',
-          [Contacts.Fields.PhoneNumbers]: [{ label: 'mobile', number: '123-456-7890' }],
-        };
-
-        const contactId = await Contacts.addContactAsync(newContact);
-        console.log('New contact added with ID:', contactId);
-      }
-    }
-  })();
+    //getContact();
+    solicitarPermissaoContatos()
   }, []);
 
-    useEffect(() => {
-      //getContact();
+    // useEffect(() => {
+    //   //getContact();
 
-      //função para pedir a permição do usuário
+    //   //função para pedir a permição do usuário
 
-      {/* atalho do whatsapp para mensagem 
-        https://wa.me/5511999999999?text=Eu%20quero%20fazer%20um%20pedido
-      */}
+    //   {/* atalho do whatsapp para mensagem 
+    //     https://wa.me/5511999999999?text=Eu%20quero%20fazer%20um%20pedido
+    //   */}
 
-      (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          setErrorMsg('Permissão de localização negada. \nPara usar a aplicação você precisa habilitar a permissão\n');
-          return
-        }
+    //   (async () => {
+    //     let { status } = await Location.requestForegroundPermissionsAsync();
+    //     if (status !== 'granted') {
+    //       setErrorMsg('Permissão de localização negada. \nPara usar a aplicação você precisa habilitar a permissão\n');
+    //       return
+    //     }
   
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-        console.log(`https://wa.me/${contato}?text=stou%20precisando%20de%20ajuda%20estou%20${location.coords.latitude + '%20&&' + location.coords.longitude}`)
-      })();
-    }, []);
+    //     let location = await Location.getCurrentPositionAsync({});
+    //     setLocation(location);
+    //     // console.log(`https://wa.me/${contato}?text=stou%20precisando%20de%20ajuda%20estou%20${location.coords.latitude + '%20&&' + location.coords.longitude}`)
+    //   })();
+    // }, []);
+
+    async function solicitarPermissaoContatos(){
+
+  const { status, canAskAgain } = await Contacts.getPermissionsAsync();
+
+  if (status === 'granted') {
+    console.log("Permissão já concedida.");
+    return true;
+  }
+
+  if (status !== 'granted' && canAskAgain) {
+    const { status: novoStatus } = await Contacts.requestPermissionsAsync();
+    return novoStatus === 'granted';
+  }
+
+  if (!canAskAgain) {
+    Alert.alert(
+      "Permissão necessária",
+      "Você negou permanentemente o acesso aos contatos. Vá até as configurações do aplicativo para permitir.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Abrir configurações", onPress: () => Linking.openSettings() }
+      ]
+    );
+    return false;
+  }
+  return false;
+}
   
     if (errorMsg) {
-      let status = false;
       return (
       <View>
         <Text>{errorMsg}</Text>
@@ -91,10 +104,12 @@ export default function Home() {
         <Switch
             trackColor={{false: '777', true: '8bf'}}
             thumbColor={errorMsg ? '00f' : '#444'}
-            value={status}
-            onValueChange={() =>{
-              async (status) => await Location.requestForegroundPermissionsAsync()
-            }} />
+            value={contato}
+            onValueChange={async () => {
+  let { status } = await Location.requestForegroundPermissionsAsync();
+  setPermissionGranted(status === 'granted');
+}}
+ />
       </View>
     )}
   
@@ -102,13 +117,10 @@ export default function Home() {
       return <ActivityIndicator size="large" color="#0000ff" />;
     }
 
-    console.log(location)
-
   function sendLocation(location){
     const thingToSay = 'Sua Localização foi enviada para seu contato!';
     if(Platform.OS == "ios"){
       try {
-        
         Alert.alert("Localização enviada!");
         Speech.speak(thingToSay);
       } catch (error) {
@@ -116,6 +128,7 @@ export default function Home() {
       }
     }else{
       try {
+        console.log(`https://wa.me/${contato}?text=stou%20precisando%20de%20ajuda%20estou%20${location.coords.latitude + '%20&&' + location.coords.longitude}`)
         Alert.alert("Localização enviada!");
         Speech.speak(thingToSay);
       } catch (error) {
@@ -127,10 +140,10 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={sendLocation}>
+      <TouchableOpacity onPress={() => sendLocation(location)}>
         <Image source={siren} style={styles.image}/>
         <Text style={styles.text}>Emergency</Text>
-        {/* <MapView /> */}
+        <MapView />
       </TouchableOpacity>
     </View>
   );
