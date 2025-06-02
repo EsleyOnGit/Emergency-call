@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import Button from "../Button/Button";
 import { useContext } from 'react';
 import { InformationsContext } from '../context/formInfo';
+import Container from '../components/Container/container';
 
 export default function Profile() {
   const {
@@ -10,34 +11,38 @@ export default function Profile() {
   medicacao, nomeCont, numContato
 } = useContext(InformationsContext);
 
+
   return (
-    <View style={styles.container}>
-      <Button title="Nome" descricao={nome} />
-    
-      <Button title="idade" descricao={2025-data_nasc} />
+    <Container>
+      <View style={styles.container}>
+        
+        <View style={styles.itens}>
+          <Button title="Nome" descricao={nome} />
+          <Button title="idade" descricao={2025-data_nasc} />
+        </View>
 
-      <Button title="Tipo Sanguineo" descricao={tipoSang}/>  
+        <View style={styles.itens}>
+          <Button title="Tipo Sanguineo" descricao={tipoSang}/>  
+          <Button title="Alergica a" descricao={alergia}/>
+        </View>
 
-      <Button title="Alergica a" descricao={alergia}/>
+        <View style={styles.itens}>
+          <Button title="medicação" descricao={medicacao}/>  
+          <Button title="Contato cadastrado" descricao={nomeCont}/>
+        </View> 
 
-      <Button title="medicação" descricao={medicacao}/>  
-
-      <Button title="Contato cadastrado" descricao={nomeCont}/>
-      <Button title="Contato cadastrado" descricao={numContato}/>
-      <TouchableOpacity title="Abrir Modal" onPress={() => EditInformation(true)} ><Text>abrir modal</Text></TouchableOpacity>
-
-      
-
-
-    </View>
+        <Button title="Contato cadastrado" descricao={numContato}/>
+        <TouchableOpacity title="Abrir Modal" onPress={() => EditInformation(true)} ><Text>abrir modal</Text></TouchableOpacity>
+      </View>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    color: "yellow"
   },
   modalBackground: {
     flex: 1,
@@ -56,4 +61,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 18,
   },
+  itens:{
+    alignItems: "flex-start"
+  }
 });

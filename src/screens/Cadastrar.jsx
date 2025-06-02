@@ -1,7 +1,8 @@
-import { useContext, useEffect } from "react";
-import { View, Text, TextInput } from "react-native"
+import { useContext, useEffect, useState } from "react";
+import { View, Text, TextInput, Alert } from "react-native"
 import { InformationsContext } from "../context/formInfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Container from "../components/Container/container";
 
 export default function Cadastrar(){
     const {nome, data_nasc, tipoSang, alergia,
@@ -9,6 +10,8 @@ export default function Cadastrar(){
   setNome, setData_nasc, setTipoSang, setAlergia,
   setMedicacao, setNomeCont, setNumContato
 } = useContext(InformationsContext);
+
+const [loading, setLoading] = useState(false);
 
 // Salvar dados
 const saveData = async () => {
@@ -21,6 +24,7 @@ const saveData = async () => {
     console.log('Dados salvos com sucesso!');
   } catch (error) {
     console.error('Erro ao salvar dados:', error);
+    Alert.alert("Erro", "Não foi possível salvar os dados.");
   }
 };
 
@@ -28,21 +32,47 @@ const saveData = async () => {
 const getData = async () => {
   try {
     const value = await AsyncStorage.getItem("dados");
+    console.log(value)
     return value != null ? JSON.parse(value) : null;
   } catch (error) {
     console.error('Erro ao recuperar as informações:', error);
+    Alert.alert("Erro", "Não foi possível carregar os dados.");
     return null;
   }
 };
 
-useEffect(()=>{
-    saveData();
-    getData();
-},[nome, data_nasc,alergia, numContato])
+// Carrega dados ao iniciar
+useEffect(() => {
+        const loadData = async () => {
+    setLoading(true);
+    const savedData = await getData();
+    if (!savedData) {
+        Alert.alert("Aviso", "Você não tem dados cadastrados.");
+    } else {
+        setNome(savedData.nome || "");
+        setData_nasc(savedData.data_nasc || "");
+        setTipoSang(savedData.tipoSang || "");
+        setAlergia(savedData.alergia || "");
+        setMedicacao(savedData.medicacao || "");
+        setNomeCont(savedData.nomeCont || "");
+        setNumContato(savedData.numContato || "");
+    }
+    setLoading(false);
+};
+
+        loadData();
+    }, []);
+
+    // Salva dados quando algum campo relevante muda
+    useEffect(() => {
+        if (nome && numContato) { // Só salva se nome e numContato estiverem preenchidos
+            saveData();
+        }
+    }, [nome, data_nasc, alergia, numContato]);
 
    return(
-   <View> 
-        <View>
+   <Container> 
+        <View style={{alignItems: "flex-start"}}>
             <Text>Nome Completo</Text>
             <TextInput placeholder="Digite seu nome..." onChangeText={(text) => setNome(text)}
                 value={nome} 
@@ -90,5 +120,5 @@ useEffect(()=>{
                 value={numContato} 
                 />
         </View>
-    </View>
+    </Container>
 )}
