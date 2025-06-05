@@ -41,6 +41,29 @@ const getData = async () => {
   }
 };
 
+const salvarHistoricoEmergencia = async (location) => {
+        try {
+            const historico = await AsyncStorage.getItem('historicoEmergencias');
+            let emergencias = historico ? JSON.parse(historico) : [];
+            
+            const novaEmergencia = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                timestamp: new Date().toISOString(),
+                contato: contato,
+                accuracy: location.coords.accuracy
+            };
+            
+            emergencias.unshift(novaEmergencia); // Adiciona no início
+            emergencias = emergencias.slice(0, 20); // Mantém apenas 20 últimas
+            
+            await AsyncStorage.setItem('historicoEmergencias', JSON.stringify(emergencias));
+            console.log('Emergência salva no histórico');
+        } catch (error) {
+            console.error('Erro ao salvar histórico:', error);
+        }
+    };
+
 // Carrega dados ao iniciar
 useEffect(() => {
         const loadData = async () => {
@@ -49,13 +72,13 @@ useEffect(() => {
     if (!savedData) {
         Alert.alert("Aviso", "Você não tem dados cadastrados.");
     } else {
-        setNome(savedData.nome || "");
-        setData_nasc(savedData.data_nasc || "");
-        setTipoSang(savedData.tipoSang || "");
-        setAlergia(savedData.alergia || "");
-        setMedicacao(savedData.medicacao || "");
-        setNomeCont(savedData.nomeCont || "");
-        setNumContato(savedData.numContato || "");
+        setNome(savedData.nome);
+        setData_nasc(savedData.data_nasc);
+        setTipoSang(savedData.tipoSang);
+        setAlergia(savedData.alergia);
+        setMedicacao(savedData.medicacao);
+        setNomeCont(savedData.nomeCont);
+        setNumContato(savedData.numContato);
     }
     setLoading(false);
 };

@@ -10,13 +10,11 @@ import Container from '../components/Container/container';
 import { SettingsContext } from '../context/settingsContext';
 import { Colors } from '../context/personalizacoes';
 
-//import MapView from 'react-native-maps';
-
 export default function Home(){
     const { nome, data_nasc, tipoSang, alergia,
             medicacao, nomeCont, numContato
           } = useContext(InformationsContext);
-          const {darkMode} = useContext(SettingsContext);
+    const {darkMode} = useContext(SettingsContext);
 
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
@@ -24,160 +22,212 @@ export default function Home(){
     const nav = useNavigation();
 
     async function getContact(){
-    
-      //Ask for permission
-      try {
-        const { status } = await Contacts.requestPermissionsAsync();
-        if (status !== 'granted') {
-          return setErrorMsg("Permissão negada!");
-        }
-
-          const contacts =  await Contacts.getContactsAsync({
-              fields: [Contacts.Fields.PhoneNumbers],
-              pageSize: 10,
-              pageOffset: 0
-            })
-          
-          if (contacts.total > 0) {
-             const firstPhone = contacts.data[0]?.phoneNumbers?.[0]?.number;
-            if (firstPhone) {
-             setContato(firstPhone.replace(/\D/g, '')); // remove caracteres não numéricos
+        try {
+            const { status } = await Contacts.requestPermissionsAsync();
+            if (status !== 'granted') {
+                console.log("Permissão de contatos negada, usando contato padrão");
+                // Não definir como erro, apenas usar o contato padrão
+                return;
             }
-          }
 
-      } catch (error) {
-        setErrorMsg(error)
-      }
-  }
+            const contacts = await Contacts.getContactsAsync({
+                fields: [Contacts.Fields.PhoneNumbers],
+                pageSize: 10,
+                pageOffset: 0
+            });
+          
+            if (contacts.total > 0) {
+                const firstPhone = contacts.data[0]?.phoneNumbers?.[0]?.number;
+                if (firstPhone) {
+                    setContato(firstPhone.replace(/\D/g, '')); // remove caracteres não numéricos
+                    console.log("Contato obtido:", firstPhone);
+                }
+            }
 
-  useEffect(() => {
-  async function fetchData() {
-    try {
-      await getContact();
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permissão para acessar localização foi negada');
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    } catch (error) {
-      setErrorMsg("Erro ao obter permissões ou localização: " + error.message);
-    }
-  }
-
-  fetchData();
-}, []);
-
-
-    // useEffect(() => {
-    //   //getContact();
-
-    //   //função para pedir a permição do usuário
-
-    //   {/* atalho do whatsapp para mensagem 
-    //     https://wa.me/5511999999999?text=Eu%20quero%20fazer%20um%20pedido
-    //   */}
-
-    //   (async () => {
-    //     let { status } = await Location.requestForegroundPermissionsAsync();
-    //     if (status !== 'granted') {
-    //       setErrorMsg('Permissão de localização negada. \nPara usar a aplicação você precisa habilitar a permissão\n');
-    //       return
-    //     }
-  
-    //     let location = await Location.getCurrentPositionAsync({});
-    //     setLocation(location);
-    //     // console.log(`https://wa.me/${contato}?text=stou%20precisando%20de%20ajuda%20estou%20${location.coords.latitude + '%20&&' + location.coords.longitude}`)
-    //   })();
-    // }, []);
-
-    
-  
-    if (errorMsg) {
-      return (
-      <Container>
-        <Text style={darkMode ? styles.text: ''}>{errorMsg}</Text>
-        <TouchableOpacity style={styles.btn} onPress={()=> nav.navigate("Setting")}>
-          <Text style={darkMode ? styles.textbtn: ''}>Configurações</Text>
-          </TouchableOpacity>
-      </Container>
-    )}
-  
-    if (!location) {
-      return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-
-  function sendLocation(location){
-    
-    const thingToSay = 'Sua Localização foi enviada para seu contato!';
-    if(Platform.OS == "ios"){
-      try {
-        Alert.alert("Localização enviada!");
-        Speech.speak(thingToSay);
-      } catch (error) {
-        Alert.alert("erro ao enviar a localização" + error)
-      }
-    }else{
-      try {
-        if (!location) {
-          Alert.alert("Erro", "Localização não disponível.");
-          return;
-        }else{
-          Linking.openURL(`https://wa.me/${contato}?text=Estou%20precisando%20de%20ajuda!%20Minha%20localização%20é:%20${location.coords.latitude},${location.coords.longitude}`);
-          Alert.alert("Localização enviada!");
-          Speech.speak(thingToSay);
+        } catch (error) {
+            console.log("Erro ao obter contatos:", error.message);
+            // Não definir como erro fatal, continuar com contato padrão
         }
-      } catch (error) {
-        Alert.alert("erro ao enviar a localização" + error);
-        Speech.speak("Erro ao enviar a localização!" + error);
-      }
     }
-  };
 
-  return (
-    <Container>
-      <TouchableOpacity onPress={() => sendLocation(location)}>
-        <Image source={siren} style={styles.image}/>
-        <Text style={styles.text}>Emergency</Text>
-        {/* <MapView /> */}
-      </TouchableOpacity>
-    </Container>
-  );
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                // Primeiro tenta obter contatos (não é crítico)
+                await getContact();
+
+                // Depois tenta obter localização (crítico)
+                console.log("Solicitando permissão de localização...");
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                
+                if (status !== 'granted') {
+                    setErrorMsg('Permissão para acessar localização foi negada. Por favor, habilite nas configurações do seu dispositivo.');
+                    return;
+                }
+
+                console.log("Permissão concedida, obtendo localização...");
+                const locationResult = await Location.getCurrentPositionAsync({
+                    accuracy: Location.Accuracy.High,
+                    timeout: 15000, // 15 segundos de timeout
+                });
+                
+                console.log("Localização obtida:", locationResult);
+                setLocation(locationResult);
+
+            } catch (error) {
+                console.log("Erro detalhado:", error);
+                
+                // Diferentes tratamentos baseados no tipo de erro
+                if (error.code === 'E_LOCATION_TIMEOUT') {
+                    setErrorMsg("Timeout ao obter localização. Tente novamente.");
+                } else if (error.code === 'E_LOCATION_UNAVAILABLE') {
+                    setErrorMsg("Localização indisponível. Verifique se o GPS está ativado.");
+                } else if (error.code === 'E_LOCATION_SETTINGS_UNSATISFIED') {
+                    setErrorMsg("Configurações de localização inadequadas. Verifique as configurações do GPS.");
+                } else {
+                    setErrorMsg("Erro ao obter localização: " + (error.message || "Erro desconhecido"));
+                }
+            }
+        }
+
+        fetchData();
+    }, []);
+  
+    // Renderizar erro com estilos corretos
+    if (errorMsg) {
+        return (
+            <Container>
+                <Text style={[styles.errorText, darkMode && styles.darkText]}>
+                    {errorMsg}
+                </Text>
+                <TouchableOpacity 
+                    style={[styles.btn, darkMode && styles.darkBtn]} 
+                    onPress={() => {
+                        // Tentar novamente
+                        setErrorMsg(null);
+                        setLocation(null);
+                    }}
+                >
+                    <Text style={[styles.textbtn, darkMode && styles.darkTextBtn]}>
+                        Tentar Novamente
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    style={[styles.btn, darkMode && styles.darkBtn, {marginTop: 10}]} 
+                    onPress={() => nav.navigate("Setting")}
+                >
+                    <Text style={[styles.textbtn, darkMode && styles.darkTextBtn]}>
+                        Configurações
+                    </Text>
+                </TouchableOpacity>
+            </Container>
+        );
+    }
+  
+    // Loading
+    if (!location) {
+        return (
+            <Container>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text style={[styles.loadingText, darkMode && styles.darkText]}>
+                    Obtendo localização...
+                </Text>
+            </Container>
+        );
+    }
+
+    function sendLocation(location){
+        const thingToSay = 'Sua Localização foi enviada para seu contato!';
+        
+        if(Platform.OS === "ios"){
+            try {
+                Alert.alert("Localização enviada!");
+                Speech.speak(thingToSay);
+            } catch (error) {
+                Alert.alert("Erro ao enviar a localização: " + error.message);
+            }
+        } else {
+            try {
+                if (!location) {
+                    Alert.alert("Erro", "Localização não disponível.");
+                    return;
+                }
+                
+                const message = `Estou%20precisando%20de%20ajuda!%20Minha%20localização%20é:%20${location.coords.latitude},${location.coords.longitude}`;
+                Linking.openURL(`https://wa.me/${contato}?text=${message}`);
+                Alert.alert("Localização enviada!");
+                Speech.speak(thingToSay);
+                
+            } catch (error) {
+                Alert.alert("Erro ao enviar a localização: " + error.message);
+                Speech.speak("Erro ao enviar a localização!");
+            }
+        }
+    }
+
+    return (
+        <Container>
+            <TouchableOpacity 
+                onPress={() => sendLocation(location)}
+                style={styles.emergencyButton}
+            >
+                <Image source={siren} style={styles.image}/>
+                <Text style={[styles.text, darkMode && styles.darkText]}>
+                    Emergency
+                </Text>
+            </TouchableOpacity>
+        </Container>
+    );
 }
 
 const styles = StyleSheet.create({
-  image: {
-  width: 100,
-  height: 100,
-  alignSelf: "center",
-  marginTop: 50
-},
-  text:{
-    flex: 1,
-    color: Colors.light,
-    position: 'relative',
-    fontSize: 20,
-    top: 90,
-    textAlign: "center",
-    justifyContent: "center"
-  },
-  textbtn:{
-    fontSize: 20,
-    color: Colors.light
-  },
-  btn:{
-    backgroundColor: 'rgba(252, 252, 252, 0.23)',
-    borderRadius: 5
-  }
+    image: {
+        width: 100,
+        height: 100,
+        alignSelf: "center",
+        marginTop: 50
+    },
+    text: {
+        color: '#000',
+        fontSize: 20,
+        marginTop: 20,
+        textAlign: "center",
+    },
+    darkText: {
+        color: Colors.light,
+    },
+    errorText: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#ff0000',
+    },
+    loadingText: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginTop: 20,
+        color: '#666',
+    },
+    textbtn: {
+        fontSize: 20,
+        color: '#000',
+        textAlign: 'center',
+        padding: 10,
+    },
+    darkTextBtn: {
+        color: Colors.light,
+    },
+    btn: {
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        borderRadius: 5,
+        marginHorizontal: 20,
+    },
+    darkBtn: {
+        backgroundColor: 'rgba(252, 252, 252, 0.23)',
+    },
+    emergencyButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    }
 });
-
-// doc https://docs.expo.dev/versions/latest/sdk/location/
-// Em tempo real await Location.watchPositionAsync(
-//         {
-//           accuracy: Location.Accuracy.High,
-//           timeInterval: 5000,      // atualiza a cada 5 segundos
-//           distanceInterval: 10,    // ou a cada 10 metros percorridos
-//         },

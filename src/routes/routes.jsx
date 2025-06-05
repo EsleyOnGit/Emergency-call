@@ -23,18 +23,20 @@ const Routes = () =>{
                 <Drawer.Navigator screenOptions={{
                     drawerType: 'slide',
                     overlayColor: 'transparent',
-                    drawerActiveBackgroundColor: darkMode? 'rgba(255, 255, 255, 0.42)': Colors.menu2,
-                    drawerItemStyle: Styles.drawerItemStyles,
+                    drawerActiveBackgroundColor: darkMode? 'rgba(255, 255, 255, 0.21)': Colors.menu2,
+                    drawerItemStyle: darkMode? Styles.drawerItemStylesDark : Styles.drawerItemStyles,
                     drawerActiveTintColor: Colors.black,
-                    drawerLabelStyle: Styles.drawerItemStyles,
+                    drawerLabelStyle: {
+                        borderRadius: 12,
+                        color: darkMode? Colors.light : Colors.black},
                     drawerStyle:{
-                        backgroundColor: darkMode? Colors.darkMode:'rgba(255, 255, 255, 0.61)',
+                        backgroundColor: darkMode? Colors.darkMode:'rgba(255, 255, 255, 0.68)',
                         color: darkMode? Colors.light : Colors.black,
                     },
                     
                 }}
                 >
-                    {numContato == 11 ? <Drawer.Screen name='cadastrar' component={Cadastrar} /> : <Drawer.Screen name='Home' component={Home} />}
+                    {numContato <= 11 ? <Drawer.Screen name='cadastrar' component={Cadastrar} /> : <Drawer.Screen name='Home' component={Home} />}
                     <Drawer.Screen name='Profile' component={Profile} />
                     <Drawer.Screen name='Setting' component={Setting} />
                 </Drawer.Navigator>
@@ -51,7 +53,11 @@ const Styles = StyleSheet.create({
     },
     drawerItemStyles:{
         borderRadius: 12,
-        color: Colors.purple
+        color: Colors.black
+    },
+    drawerItemStylesDark:{
+        borderRadius: 12,
+        color: Colors.light
     },
     drawerLabelStyles:{
         fontSize: Fonts.titleSm,

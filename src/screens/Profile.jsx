@@ -8,9 +8,19 @@ import Container from '../components/Container/container';
 export default function Profile() {
   const {
   nome, data_nasc, tipoSang, alergia,
-  medicacao, nomeCont, numContato
+  medicacao, nomeCont, numContato,setContato
 } = useContext(InformationsContext);
 
+// Exemplo de como criar uma tela de configurações
+const alterarContato = async (novoContato) => {
+    try {
+        await AsyncStorage.setItem('contatoEmergencia', novoContato);
+        setContato(novoContato);
+        Alert.alert('Contato alterado com sucesso!');
+    } catch (error) {
+        Alert.alert('Erro ao alterar contato');
+    }
+};
 
   return (
     <Container>
@@ -32,7 +42,7 @@ export default function Profile() {
         </View> 
 
         <Button title="Contato cadastrado" descricao={numContato}/>
-        <TouchableOpacity title="Abrir Modal" onPress={() => EditInformation(true)} ><Text>abrir modal</Text></TouchableOpacity>
+        <TouchableOpacity title="Abrir Modal" onPress={() => alterarContato} ><Text>abrir modal</Text></TouchableOpacity>
       </View>
     </Container>
   );

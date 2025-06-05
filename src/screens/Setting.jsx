@@ -31,6 +31,28 @@ const Setting = () => {
     return true
   };
 
+  // Exemplo de como criar uma tela de configurações
+const alterarContato = async (novoContato) => {
+    try {
+        await AsyncStorage.setItem('contatoEmergencia', novoContato);
+        setContato(novoContato);
+        Alert.alert('Contato alterado com sucesso!');
+    } catch (error) {
+        Alert.alert('Erro ao alterar contato');
+    }
+};
+
+// Em qualquer lugar do seu app
+const verHistorico = async () => {
+    try {
+        const historico = await AsyncStorage.getItem('historicoEmergencias');
+        const emergencias = historico ? JSON.parse(historico) : [];
+        console.log('Histórico:', emergencias);
+    } catch (error) {
+        console.error('Erro:', error);
+    }
+};
+
   async function solicitarPermissaoContatos(){
   
       const { status, canAskAgain } = await Contacts.getPermissionsAsync();
@@ -59,48 +81,45 @@ const Setting = () => {
   }
 
   useEffect(()=>{
-    ativarNarrador();
     getPermission();
   },[]);
 
   return (
-      <Container darkMode={darkMode} style={darkMode? styles.darkContainer : styles.container}>
-        <View>
+      <Container darkMode={darkMode} style={darkMode? styles.darkContainer : ''}>
+        <View style={styles.containerbtn}>
           <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Modo escuro</Text>
+          <TouchableOpacity style={styles.ligthBtn} onPress={toggle}>
+            <View style={darkMode? styles.toogleDark : styles.toogle}>
+              <Text style={darkMode? styles.textBtn: styles.textBtnDark}>{darkMode ? "ON" : "OFF"}</Text>
+            </View>
+          </TouchableOpacity>
         </View>
         
-        <TouchableOpacity style={styles.ligthBtn} onPress={toggle}>
-          <View style={darkMode? styles.toogleDark : styles.toogle}>
-            <Text style={darkMode? styles.textBtn: styles.textBtnDark}>{darkMode ? "ON" : "OFF"}</Text>
-          </View>
-        </TouchableOpacity>
-
+        <View style={styles.containerbtn}>
           <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Modo mensagem</Text>
+          <TouchableOpacity style={styles.ligthBtn} onPress={smsdarkMode} >
+            <View style={sms? styles.toogle :styles.toogleDark }>
+              <Text style={!sms?styles.textBtn :styles.textBtnDark }>{!sms ? "ON" : "OFF"}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.ligthBtn} onPress={smsdarkMode} >
-          <View style={sms? styles.toogle :styles.toogleDark }>
-            <Text style={!sms?styles.textBtn :styles.textBtnDark }>{!sms ? "ON" : "OFF"}</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.containerbtn}>
+          <Text accessibilityLabelledBy={"Toque para aumentar o tamanhho da Fonte"} style={darkMode? styles.textBtn: styles.textBtnDark}>Tamanho de Fonte</Text>
+        </View>
 
-        <Text accessibilityLabelledBy={"Toque para aumentar o tamanhho da Fonte"} style={darkMode? styles.textBtn: styles.textBtnDark}>Tamanho de Fonte</Text>
+        <View style={styles.containerbtn}>
+          <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar narrador</Text>
+          <Switch
+              trackColor={{false: '#777', true: '#8bf'}}
+              thumbColor={ttsOn? '#fff' : '#444'}
+              value={ttsOn}
+              onValueChange={() =>{
+                ativarNarrador()
+              }} /> 
+        </View>
 
-        {/* <Switch
-            trackColor={{false: '777', true: '8bf'}}
-            thumbColor={sms? '00f' : '#444'}
-            value={sms}
-            onValueChange={() =>{
-              setSms(previous => !previous)
-            }} /> */}
-
-        <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar narrador</Text>
-        <Switch
-            trackColor={{false: '#777', true: '#8bf'}}
-            thumbColor={ttsOn? '#fff' : '#444'}
-            value={ttsOn}
-            onValueChange={() =>{
-              ativarNarrador()
-            }} /> 
+        <View style={styles.containerbtn}>
         <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar Permissão</Text>
         <Switch
             trackColor={{false: '#777', true: '#8bf'}}
@@ -109,6 +128,7 @@ const Setting = () => {
             onValueChange={() =>{
               getPermission()
             }} /> 
+        </View>
         {/* <TouchableOpacity style={styles.ligthBtn} onPress={ativarNarrador}>
           <View style={ttsOn? styles.toogle : styles.toogleDark }>
             <Text style={!darkMode? styles.textBtn: styles.textBtnDark}>{!ttsOn ? "ON" : "OFF"}</Text>
@@ -120,10 +140,16 @@ const Setting = () => {
 
 export default Setting;
 const styles = StyleSheet.create({
-  container: {
+  containerbtn: {
     flex: 1, 
-    justifyContent: 'space-around', 
+    flexDirection: "row",
+    gap: 10,
+    padding: 10,
+    margin: 0,
+    maxHeight: 75,
     alignItems: 'center',
+    backgroundColor: Colors.menu3,
+    borderRadius: 15
   },
   darkContainer: {
     flex: 1, 
@@ -160,20 +186,20 @@ const styles = StyleSheet.create({
   toogleDark:{
     height: '100%',
     width: '100%',
-    backgroundColor: '#222',
+    backgroundColor: Colors.green,
     alignItems: 'flex-start',
     justifyContent: "center",
     
   },
   textBtn:{
-    color: '#fff',
+    color: Colors.dark,
     fontSize: 10,
     fontWeight: '500',
     fontSize: 18,
     textAlign: "right"
   },
   textBtnDark:{
-    color: '#222',
+    color: Colors.dark,
     fontSize: 10,
     fontWeight: '500',
     fontSize: 18,
