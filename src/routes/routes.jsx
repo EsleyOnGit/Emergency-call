@@ -15,7 +15,7 @@ import { SettingsContext } from '../context/settingsContext';
 const Drawer = createDrawerNavigator();
 
 const Routes = () =>{
-    const { numContato } = useContext(InformationsContext);
+    const { nome } = useContext(InformationsContext);
     const {darkMode} = useContext(SettingsContext);
     return(
         <SafeAreaView style={{ flex: 1 }}>
@@ -36,7 +36,7 @@ const Routes = () =>{
                     
                 }}
                 >
-                    {numContato <= 11 ? <Drawer.Screen name='cadastrar' component={Cadastrar} /> : <Drawer.Screen name='Home' component={Home} />}
+                    {nome === '' ? <Drawer.Screen name='cadastrar' component={Cadastrar} /> : <Drawer.Screen name='Home' component={Home} />}
                     <Drawer.Screen name='Profile' component={Profile} />
                     <Drawer.Screen name='Setting' component={Setting} />
                 </Drawer.Navigator>

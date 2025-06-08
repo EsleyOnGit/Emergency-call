@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { View, Text, TextInput, Alert } from "react-native"
+import { View, Text, TextInput, Alert, StyleSheet } from "react-native"
 import { InformationsContext } from "../context/formInfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Container from "../components/Container/container";
+import { Colors } from "../context/personalizacoes";
 
 export default function Cadastrar(){
     const {nome, data_nasc, tipoSang, alergia,
@@ -40,7 +41,7 @@ const getData = async () => {
     return null;
   }
 };
-
+/* Tirar daqui
 const salvarHistoricoEmergencia = async (location) => {
         try {
             const historico = await AsyncStorage.getItem('historicoEmergencias');
@@ -63,6 +64,7 @@ const salvarHistoricoEmergencia = async (location) => {
             console.error('Erro ao salvar histórico:', error);
         }
     };
+*/
 
 // Carrega dados ao iniciar
 useEffect(() => {
@@ -95,49 +97,49 @@ useEffect(() => {
 
    return(
    <Container> 
-        <View style={{alignItems: "flex-start"}}>
+        <View style={styles.viewBtn}>
             <Text>Nome Completo</Text>
             <TextInput placeholder="Digite seu nome..." onChangeText={(text) => setNome(text)}
                 value={nome} 
                 />
         </View>
 
-        <View>
+        <View style={styles.viewBtn}>
             <Text>data de nascimento</Text>
             <TextInput placeholder="DD/MM/AAAA" onChangeText={(text) => setData_nasc(text)} 
                 value={data_nasc}
                 />
         </View>
 
-        <View>
+        <View style={styles.viewBtn}>
             <Text>Qual o seu tipo sanguineo</Text>
             <TextInput placeholder="EX: B+" onChangeText={(text) => setTipoSang(text)}
                 value={tipoSang}    
                 />
         </View>
 
-        <View>
+        <View style={styles.viewBtn}>
             <Text>você tem alguma alergia?</Text>
             <TextInput placeholder="Alergic(o)a " onChangeText={(text) => setAlergia(text)}
                 value={alergia}    
             />
         </View>
 
-        <View>
+        <View style={styles.viewBtn}>
             <Text>Toma algum tipo de medicação periódica?</Text>
             <TextInput placeholder="medicação" onChangeText={(text) => setMedicacao(text)} 
                 value={medicacao}    
                 />
         </View>
         
-        <View>
+        <View style={styles.viewBtn}>
             <Text>Nome do Contato</Text>
             <TextInput placeholder="Digite seu nome..." onChangeText={(text) => setNomeCont(text)}
                 value={nomeCont} 
                 />
         </View>
         
-        <View>
+        <View style={styles.viewBtn}>
             <Text>Numero para contato:</Text>
             <TextInput placeholder="(DDD) 9 91234567" onChangeText={(text) => setNumContato(text)}
                 value={numContato} 
@@ -145,3 +147,18 @@ useEffect(() => {
         </View>
     </Container>
 )}
+
+const styles = StyleSheet.create({
+    viewBtn: {
+            
+            alignItems: "center",
+            padding: 10,
+            backgroundColor: Colors.menu3,
+            borderRadius: 15,
+            margin: 5
+        },
+        inputs:{
+            height: 50,
+            width: 50
+        }
+})

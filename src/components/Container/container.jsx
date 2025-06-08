@@ -4,7 +4,7 @@ import { useContext, useEffect } from "react";
 import { SettingsContext } from "../../context/settingsContext";
 
 export default function Container(props){
-    const {darkMode, setDarkMode} = useContext(SettingsContext);
+    const {darkMode, setDarkMode, tamFont} = useContext(SettingsContext);
 
     useEffect(()=>{
         console.log(darkMode);
@@ -18,6 +18,7 @@ export default function Container(props){
             backgroundColor: darkMode ? Colors.darkMode : Colors.light,
             padding: 0,
             margin: 0,
+            fontSize: tamFont
         }}>
             {props.children}
         </SafeAreaView>

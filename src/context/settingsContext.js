@@ -7,7 +7,7 @@ const SettingProvider = (props) =>{
   const [sms, setSms] = useState(false);
   const [ttsOn, setTtsOn] = useState(false);
   const [permission, setPermission] = useState(false)
-  const [tamFont, setTamFont] = useState(14)
+  const [tamFont, setTamFont] = useState(24)
 
     return(
         <SettingsContext.Provider value={{

@@ -14,12 +14,66 @@ export default function Home(){
     const { nome, data_nasc, tipoSang, alergia,
             medicacao, nomeCont, numContato
           } = useContext(InformationsContext);
-    const {darkMode} = useContext(SettingsContext);
+    const {darkMode, sms} = useContext(SettingsContext);
 
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
     const [contato, setContato] = useState('75998323259');
     const nav = useNavigation();
+
+    const enviarLocalizacaoPorSMS = async () => {
+
+        const mensagem = `estou precisando de sua ajuda minha localização é: https://www.google.com/maps?q=${location.coords.latitude},${location.coords.longitude}`;
+
+        const isAvailable = await SMS.isAvailableAsync();
+        if (isAvailable) {
+            await SMS.sendSMSAsync(
+            [`+55${contato}`], // coloque o número do contato de emergência aqui
+            mensagem
+            );
+        } else {
+            Alert.alert('SMS não disponível neste dispositivo');
+        }
+    };
+
+async function fetchData() {
+            try {
+                // Primeiro tenta obter contatos (não é crítico)
+                await getContact();
+
+                // Depois tenta obter localização (crítico)
+                //console.log("Solicitando permissão de localização...");
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                
+                if (status !== 'granted') {
+                    setErrorMsg('Permissão para acessar localização foi negada. Por favor, habilite nas configurações do seu dispositivo.');
+                    return;
+                }
+
+                console.log("Permissão concedida, obtendo localização...");
+                const locationResult = await Location.getCurrentPositionAsync({
+                    accuracy: Location.Accuracy.High,
+                    timeout: 15000, // 15 segundos de timeout
+                });
+                
+                console.log("Localização obtida:", locationResult.coords);
+                setLocation(locationResult);
+
+            } catch (error) {
+                console.log("Erro detalhado:", error);
+                
+                // Diferentes tratamentos baseados no tipo de erro
+                if (error.code === 'E_LOCATION_TIMEOUT') {
+                    setErrorMsg("Timeout ao obter localização. Tente novamente.");
+                } else if (error.code === 'E_LOCATION_UNAVAILABLE') {
+                    setErrorMsg("Localização indisponível. Verifique se o GPS está ativado.");
+                } else if (error.code === 'E_LOCATION_SETTINGS_UNSATISFIED') {
+                    setErrorMsg("Configurações de localização inadequadas. Verifique as configurações do GPS.");
+                } else {
+                    setErrorMsg("Erro ao obter localização: " + (error.message || "Erro desconhecido"));
+                }
+            }
+        }
 
     async function getContact(){
         try {
@@ -51,45 +105,6 @@ export default function Home(){
     }
 
     useEffect(() => {
-        async function fetchData() {
-            try {
-                // Primeiro tenta obter contatos (não é crítico)
-                await getContact();
-
-                // Depois tenta obter localização (crítico)
-                console.log("Solicitando permissão de localização...");
-                const { status } = await Location.requestForegroundPermissionsAsync();
-                
-                if (status !== 'granted') {
-                    setErrorMsg('Permissão para acessar localização foi negada. Por favor, habilite nas configurações do seu dispositivo.');
-                    return;
-                }
-
-                console.log("Permissão concedida, obtendo localização...");
-                const locationResult = await Location.getCurrentPositionAsync({
-                    accuracy: Location.Accuracy.High,
-                    timeout: 15000, // 15 segundos de timeout
-                });
-                
-                console.log("Localização obtida:", locationResult);
-                setLocation(locationResult);
-
-            } catch (error) {
-                console.log("Erro detalhado:", error);
-                
-                // Diferentes tratamentos baseados no tipo de erro
-                if (error.code === 'E_LOCATION_TIMEOUT') {
-                    setErrorMsg("Timeout ao obter localização. Tente novamente.");
-                } else if (error.code === 'E_LOCATION_UNAVAILABLE') {
-                    setErrorMsg("Localização indisponível. Verifique se o GPS está ativado.");
-                } else if (error.code === 'E_LOCATION_SETTINGS_UNSATISFIED') {
-                    setErrorMsg("Configurações de localização inadequadas. Verifique as configurações do GPS.");
-                } else {
-                    setErrorMsg("Erro ao obter localização: " + (error.message || "Erro desconhecido"));
-                }
-            }
-        }
-
         fetchData();
     }, []);
   
@@ -152,6 +167,9 @@ export default function Home(){
                     Alert.alert("Erro", "Localização não disponível.");
                     return;
                 }
+                
+                if(sms)
+                    enviarLocalizacaoPorSMS()
                 
                 const message = `Estou%20precisando%20de%20ajuda!%20Minha%20localização%20é:%20${location.coords.latitude},${location.coords.longitude}`;
                 Linking.openURL(`https://wa.me/${contato}?text=${message}`);

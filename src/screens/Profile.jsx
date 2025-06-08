@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Button from "../Button/Button";
 import { useContext } from 'react';
 import { InformationsContext } from '../context/formInfo';
@@ -10,17 +9,6 @@ export default function Profile() {
   nome, data_nasc, tipoSang, alergia,
   medicacao, nomeCont, numContato,setContato
 } = useContext(InformationsContext);
-
-// Exemplo de como criar uma tela de configurações
-const alterarContato = async (novoContato) => {
-    try {
-        await AsyncStorage.setItem('contatoEmergencia', novoContato);
-        setContato(novoContato);
-        Alert.alert('Contato alterado com sucesso!');
-    } catch (error) {
-        Alert.alert('Erro ao alterar contato');
-    }
-};
 
   return (
     <Container>
@@ -42,7 +30,6 @@ const alterarContato = async (novoContato) => {
         </View> 
 
         <Button title="Contato cadastrado" descricao={numContato}/>
-        <TouchableOpacity title="Abrir Modal" onPress={() => alterarContato} ><Text>abrir modal</Text></TouchableOpacity>
       </View>
     </Container>
   );
@@ -51,12 +38,11 @@ const alterarContato = async (novoContato) => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    alignItems: 'center',
-    color: "yellow"
+    alignItems: 'center'
   },
   modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // fundo semi-transparente
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },

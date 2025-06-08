@@ -1,14 +1,19 @@
-import { useContext, useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Switch } from "react-native";
+import { useContext, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Switch, Linking, Image } from "react-native";
+import mais from "../../assets/mais.png"
+import menos from "../../assets/menos.png"
 import Container from "../components/Container/container";
 import { Colors } from "../context/personalizacoes";
 import { SettingsContext } from "../context/settingsContext";
+import * as Speech from 'expo-speech';
+
 
 const Setting = () => {
   const {darkMode, setDarkMode,
   sms, setSms,
   ttsOn, setTtsOn,
-  permission, setPermission} = useContext(SettingsContext)
+  permission, tamFont, setTamFont} = useContext(SettingsContext)
+
 
   const toggle = () => {
     setDarkMode(previous => !previous);
@@ -24,12 +29,20 @@ const Setting = () => {
     setTtsOn(previous => !previous);
   };
 
-  async function getPermission(){
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    console.log(status)
-    setPermission(status)
-    return true
-  };
+  const diminuirFonte = () => {
+  setTamFont(prev => (prev - 4 <= 50 ? prev - 4 : prev));
+};
+  const aumentarFonte = () => {
+  setTamFont(prev => (prev + 4 <= 70 ? prev + 4 : prev));
+};
+
+
+  const abrirConfiguracoes = () => {
+  Linking.openSettings().catch(() => {
+    Alert.alert('Erro', 'Não foi possível abrir as configurações');
+  });
+};
+
 
   // Exemplo de como criar uma tela de configurações
 const alterarContato = async (novoContato) => {
@@ -52,6 +65,24 @@ const verHistorico = async () => {
         console.error('Erro:', error);
     }
 };
+
+const lerConteudoDaTela = () => {
+  const textoParaLer = `
+    Tela de configurações.
+    Modo escuro está ${darkMode ? 'ativado' : 'desativado'}.
+    Modo mensagem está ${sms ? 'ativado' : 'desativado'}.
+    Tamanho da fonte é ${tamFont}.
+    Narrador está ${ttsOn ? 'ligado' : 'desligado'}.
+    Permissões estão ${permission ? 'concedidas' : 'não concedidas'}.
+  `;
+
+  Speech.speak(textoParaLer, {
+    language: 'pt-BR',
+    pitch: 1,
+    rate: 1,
+  });
+};
+
 
   async function solicitarPermissaoContatos(){
   
@@ -80,9 +111,15 @@ const verHistorico = async () => {
     return false;
   }
 
-  useEffect(()=>{
-    getPermission();
-  },[]);
+  useEffect(() => {
+    solicitarPermissaoContatos();
+    if (ttsOn) {
+      lerConteudoDaTela();
+    } else {
+      Speech.stop();
+    }
+}, [ttsOn, darkMode, sms, tamFont, permission]);
+
 
   return (
       <Container darkMode={darkMode} style={darkMode? styles.darkContainer : ''}>
@@ -105,15 +142,24 @@ const verHistorico = async () => {
         </View>
 
         <View style={styles.containerbtn}>
-          <Text accessibilityLabelledBy={"Toque para aumentar o tamanhho da Fonte"} style={darkMode? styles.textBtn: styles.textBtnDark}>Tamanho de Fonte</Text>
+          <Text accessibilityLabelledBy={"Toque para aumentar o tamanhho da Fonte"} style={darkMode? styles.textBtn: styles.textBtnDark}>Tamanho de Fonte:</Text>
+          <View style={styles.containerbtnimage}>
+          <TouchableOpacity onPress={diminuirFonte} style={styles.btnFonts}>
+            <Image source={menos} style={styles.imgFonts}/>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={aumentarFonte} style={styles.btnFonts}>
+            <Image source={mais} style={styles.imgFonts}/>
+          </TouchableOpacity>
+        </View>
+
         </View>
 
         <View style={styles.containerbtn}>
           <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar narrador</Text>
           <Switch
               trackColor={{false: '#777', true: '#8bf'}}
-              thumbColor={ttsOn? '#fff' : '#444'}
-              value={ttsOn}
+              thumbColor={!ttsOn? '#fff' : '#444'}
+              value={!ttsOn}
               onValueChange={() =>{
                 ativarNarrador()
               }} /> 
@@ -121,19 +167,10 @@ const verHistorico = async () => {
 
         <View style={styles.containerbtn}>
         <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar Permissão</Text>
-        <Switch
-            trackColor={{false: '#777', true: '#8bf'}}
-            thumbColor={permission? '#fff' : '#444'}
-            value={permission}
-            onValueChange={() =>{
-              getPermission()
-            }} /> 
+        <TouchableOpacity onPress={abrirConfiguracoes} style={styles.ligthBtn}>
+          <Text style={styles.textBtnDark}>Abrir Configurações</Text>
+        </TouchableOpacity>
         </View>
-        {/* <TouchableOpacity style={styles.ligthBtn} onPress={ativarNarrador}>
-          <View style={ttsOn? styles.toogle : styles.toogleDark }>
-            <Text style={!darkMode? styles.textBtn: styles.textBtnDark}>{!ttsOn ? "ON" : "OFF"}</Text>
-          </View>
-      </TouchableOpacity> */}
     </Container>
   )
 }
@@ -150,6 +187,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.menu3,
     borderRadius: 15
+  },
+  containerbtnimage: {
+    flex: 1, 
+    flexDirection: "row",
+    gap: 10,
+    padding: 10,
+    margin: 0,
+    maxHeight: 75,
+    maxWidth: 155,
+    alignItems: 'center',
+    backgroundColor: Colors.menu3,
+    borderRadius: 15,
+    justifyContent: "space-between"
   },
   darkContainer: {
     flex: 1, 
@@ -203,5 +253,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
     fontSize: 18,
+  },
+  imgFonts:{
+    maxHeight: 40,
+    maxWidth: 40
   }
 });
