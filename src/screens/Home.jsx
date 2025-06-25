@@ -3,6 +3,7 @@ import siren from "../../assets/siren.png";
 import * as Speech from 'expo-speech';
 import * as Location from 'expo-location';
 import * as Contacts from 'expo-contacts';
+import * as SMS from "expo-sms";
 import { useState, useEffect, useContext } from 'react';
 import { useNavigation } from "@react-navigation/native";
 import {InformationsContext} from '../context/formInfo';
@@ -33,6 +34,14 @@ export default function Home(){
             );
         } else {
             Alert.alert('SMS não disponível neste dispositivo');
+        }
+
+        if(sms){
+            const { result } = await SMS.sendSMSAsync(
+                ['0123456789', '9876543210'],
+                `Preciso da sua ajuda estou em: ${location.coords.latitude},${location.coords.longitude}`
+            );
+            return result;
         }
     };
 

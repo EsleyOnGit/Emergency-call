@@ -1,11 +1,12 @@
-import { useContext, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Switch, Linking, Image } from "react-native";
+import { useContext, useEffect } from "react";
+import * as Speech from 'expo-speech';
+
+import { Colors } from "../context/personalizacoes";
+import { SettingsContext } from "../context/settingsContext";
 import mais from "../../assets/mais.png"
 import menos from "../../assets/menos.png"
 import Container from "../components/Container/container";
-import { Colors } from "../context/personalizacoes";
-import { SettingsContext } from "../context/settingsContext";
-import * as Speech from 'expo-speech';
 
 
 const Setting = () => {
@@ -166,7 +167,7 @@ const lerConteudoDaTela = () => {
         </View>
 
         <View style={styles.containerbtn}>
-        <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar Permissão</Text>
+        <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Abrir configurações</Text>
         <TouchableOpacity onPress={abrirConfiguracoes} style={styles.ligthBtn}>
           <Text style={styles.textBtnDark}>Abrir Configurações</Text>
         </TouchableOpacity>
