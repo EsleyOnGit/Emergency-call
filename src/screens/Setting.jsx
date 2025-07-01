@@ -32,9 +32,15 @@ const Setting = () => {
 
   const diminuirFonte = () => {
   setTamFont(prev => (prev - 4 <= 50 ? prev - 4 : prev));
+  if(tamFont <= 20){
+    return setTamFont(50);
+  }
 };
   const aumentarFonte = () => {
-  setTamFont(prev => (prev + 4 <= 70 ? prev + 4 : prev));
+  setTamFont(prev => (prev + 4 <= 50 ? prev + 4 : prev));
+  if(tamFont >=50){
+    return setTamFont(20)
+  }
 };
 
 
@@ -42,18 +48,6 @@ const Setting = () => {
   Linking.openSettings().catch(() => {
     Alert.alert('Erro', 'Não foi possível abrir as configurações');
   });
-};
-
-
-  // Exemplo de como criar uma tela de configurações
-const alterarContato = async (novoContato) => {
-    try {
-        await AsyncStorage.setItem('contatoEmergencia', novoContato);
-        setContato(novoContato);
-        Alert.alert('Contato alterado com sucesso!');
-    } catch (error) {
-        Alert.alert('Erro ao alterar contato');
-    }
 };
 
 // Em qualquer lugar do seu app
@@ -124,8 +118,10 @@ const lerConteudoDaTela = () => {
 
   return (
       <Container darkMode={darkMode} style={darkMode? styles.darkContainer : ''}>
+        <View style={styles.viewbtn}>
+
         <View style={styles.containerbtn}>
-          <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Modo escuro</Text>
+          <Text style={darkMode? [styles.textBtn, {fontSize: tamFont}]: [styles.textBtnDark, {fontSize: tamFont}]}>Modo escuro</Text>
           <TouchableOpacity style={styles.ligthBtn} onPress={toggle}>
             <View style={darkMode? styles.toogleDark : styles.toogle}>
               <Text style={darkMode? styles.textBtn: styles.textBtnDark}>{darkMode ? "ON" : "OFF"}</Text>
@@ -134,7 +130,7 @@ const lerConteudoDaTela = () => {
         </View>
         
         <View style={styles.containerbtn}>
-          <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Modo mensagem</Text>
+          <Text style={darkMode? [styles.textBtn, {fontSize: tamFont}]: [styles.textBtnDark, {fontSize: tamFont}]}>Modo mensagem</Text>
           <TouchableOpacity style={styles.ligthBtn} onPress={smsdarkMode} >
             <View style={sms? styles.toogle :styles.toogleDark }>
               <Text style={!sms?styles.textBtn :styles.textBtnDark }>{!sms ? "ON" : "OFF"}</Text>
@@ -143,7 +139,7 @@ const lerConteudoDaTela = () => {
         </View>
 
         <View style={styles.containerbtn}>
-          <Text accessibilityLabelledBy={"Toque para aumentar o tamanhho da Fonte"} style={darkMode? styles.textBtn: styles.textBtnDark}>Tamanho de Fonte:</Text>
+          <Text accessibilityLabelledBy={"Toque para aumentar o tamanhho da Fonte"} style={darkMode? [styles.textBtn, {fontSize: tamFont}]: [styles.textBtnDark, {fontSize: tamFont}]}>Tamanho de Fonte:</Text>
           <View style={styles.containerbtnimage}>
           <TouchableOpacity onPress={diminuirFonte} style={styles.btnFonts}>
             <Image source={menos} style={styles.imgFonts}/>
@@ -156,7 +152,7 @@ const lerConteudoDaTela = () => {
         </View>
 
         <View style={styles.containerbtn}>
-          <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Habilitar narrador</Text>
+          <Text style={darkMode? [styles.textBtn, {fontSize: tamFont}]: [styles.textBtnDark, {fontSize: tamFont}]}>Habilitar narrador</Text>
           <Switch
               trackColor={{false: '#777', true: '#8bf'}}
               thumbColor={!ttsOn? '#fff' : '#444'}
@@ -167,11 +163,12 @@ const lerConteudoDaTela = () => {
         </View>
 
         <View style={styles.containerbtn}>
-        <Text style={darkMode? styles.textBtn: styles.textBtnDark}>Abrir configurações</Text>
+        <Text style={darkMode? [styles.textBtn, {fontSize: tamFont}]: [styles.textBtnDark, {fontSize: tamFont}]}>Abrir configurações</Text>
         <TouchableOpacity onPress={abrirConfiguracoes} style={styles.ligthBtn}>
           <Text style={styles.textBtnDark}>Abrir Configurações</Text>
         </TouchableOpacity>
         </View>
+      </View>
     </Container>
   )
 }
@@ -185,9 +182,16 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 0,
     maxHeight: 75,
+    justifyContent: "flex-start",
     alignItems: 'center',
     backgroundColor: Colors.menu3,
     borderRadius: 15
+  },
+  viewbtn:{
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent:"space-around",
+    gap: 20
   },
   containerbtnimage: {
     flex: 1, 
@@ -255,8 +259,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 18,
   },
+  btnFonts:{
+    margin: 0,
+    padding: 0,
+  },
   imgFonts:{
-    maxHeight: 40,
-    maxWidth: 40
+    maxHeight: 30,
+    maxWidth: 30
   }
 });

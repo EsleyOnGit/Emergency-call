@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { View, Text, TextInput, Alert, StyleSheet } from "react-native"
+import { View, Text, TextInput, Alert, StyleSheet, ScrollView } from "react-native"
 import { InformationsContext } from "../context/formInfo";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Container from "../components/Container/container";
 import { Colors } from "../context/personalizacoes";
+import Button from "../Button/Button";
 
 export default function Cadastrar(){
     const {nome, data_nasc, tipoSang, alergia,
@@ -41,30 +42,7 @@ const getData = async () => {
     return null;
   }
 };
-/* Tirar daqui
-const salvarHistoricoEmergencia = async (location) => {
-        try {
-            const historico = await AsyncStorage.getItem('historicoEmergencias');
-            let emergencias = historico ? JSON.parse(historico) : [];
-            
-            const novaEmergencia = {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                timestamp: new Date().toISOString(),
-                contato: contato,
-                accuracy: location.coords.accuracy
-            };
-            
-            emergencias.unshift(novaEmergencia); // Adiciona no início
-            emergencias = emergencias.slice(0, 20); // Mantém apenas 20 últimas
-            
-            await AsyncStorage.setItem('historicoEmergencias', JSON.stringify(emergencias));
-            console.log('Emergência salva no histórico');
-        } catch (error) {
-            console.error('Erro ao salvar histórico:', error);
-        }
-    };
-*/
+
 
 // Carrega dados ao iniciar
 useEffect(() => {
@@ -97,54 +75,66 @@ useEffect(() => {
 
    return(
    <Container> 
+    <ScrollView>
         <View style={styles.viewBtn}>
-            <Text>Nome Completo</Text>
+            <Text style={[{fontSize: tamFont}]}>Nome Completo</Text>
             <TextInput placeholder="Digite seu nome..." onChangeText={(text) => setNome(text)}
                 value={nome} 
                 />
         </View>
 
         <View style={styles.viewBtn}>
-            <Text>data de nascimento</Text>
+            <Text style={[{fontSize: tamFont}]}>data de nascimento</Text>
             <TextInput placeholder="DD/MM/AAAA" onChangeText={(text) => setData_nasc(text)} 
                 value={data_nasc}
                 />
         </View>
 
         <View style={styles.viewBtn}>
-            <Text>Qual o seu tipo sanguineo</Text>
+            <Text style={[{fontSize: tamFont}]}>Qual o seu tipo sanguineo</Text>
             <TextInput placeholder="EX: B+" onChangeText={(text) => setTipoSang(text)}
                 value={tipoSang}    
                 />
         </View>
 
         <View style={styles.viewBtn}>
-            <Text>você tem alguma alergia?</Text>
+            <Text style={[{fontSize: tamFont}]}>você tem alguma alergia?</Text>
             <TextInput placeholder="Alergic(o)a " onChangeText={(text) => setAlergia(text)}
                 value={alergia}    
             />
         </View>
 
         <View style={styles.viewBtn}>
-            <Text>Toma algum tipo de medicação periódica?</Text>
+            <Text style={[{fontSize: tamFont}]}>Toma algum tipo de medicação periódica?</Text>
             <TextInput placeholder="medicação" onChangeText={(text) => setMedicacao(text)} 
                 value={medicacao}    
                 />
         </View>
         
         <View style={styles.viewBtn}>
-            <Text>Nome do Contato</Text>
+            <Text style={[{fontSize: tamFont}]}>Nome do Contato</Text>
             <TextInput placeholder="Digite seu nome..." onChangeText={(text) => setNomeCont(text)}
                 value={nomeCont} 
                 />
         </View>
         
         <View style={styles.viewBtn}>
-            <Text>Numero para contato:</Text>
+            <Text style={[{fontSize: tamFont}]}>Numero para contato:</Text>
             <TextInput placeholder="(DDD) 9 91234567" onChangeText={(text) => setNumContato(text)}
                 value={numContato} 
-                />
+            />
         </View>
+
+        <Button 
+                  title="Escolher Contato" 
+                  descricao={numContato} 
+                  tipo="contato" // Indica que é um campo de contato
+                  onContatoAlterado={(nome, telefone) => {
+                    setNomeCont(nome);
+                    setNumContato(telefone)
+                  }}
+                />
+    </ScrollView>
     </Container>
 )}
 

@@ -4,7 +4,7 @@ const InformationsContext = createContext({});
 
 const InformationProvider = (props) =>{
     const [nome, setNome] = useState('');
-    const [numContato, setNumContato] = useState('');
+    const [numContato, setNumContato] = useState([]);
     const [nomeCont, setNomeCont] = useState('');
     const [data_nasc, setData_nasc] = useState('');
     const [tipoSang, setTipoSang] = useState('');
